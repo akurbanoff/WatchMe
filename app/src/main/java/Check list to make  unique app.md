@@ -1,4 +1,5 @@
 Необходимо поменять имя проекта на нужное в этих файлах:
+- удалить origin с помощью команды git remote remove origin и потом добавляем новый репозиторий по желанию git remote add origin git@github.com:...
 - в strings.xml поменять app_name
 - в themes.xml поменять название стиля
 - в Theme.kt поменять название функции

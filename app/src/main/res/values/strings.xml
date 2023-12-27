@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Sample</string>
+    <string name="app_name">WatchMe</string>
+    <string name="title_activity_splash_screen">SplashScreen</string>
 </resources>
