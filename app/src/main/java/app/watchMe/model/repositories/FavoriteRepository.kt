@@ -1,11 +1,12 @@
-package app.watchMe.utils
+package app.watchMe.model.repositories
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
+import app.watchMe.model.Watch
 
-class Repository {
+class FavoriteRepository {
     var hideBottomSheet by mutableStateOf(false)
     var selectedSize by mutableStateOf("")
     var currentPagerIndex by mutableStateOf(0)

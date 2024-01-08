@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,12 +17,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Circle
@@ -33,8 +30,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.Circle
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -46,7 +41,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,19 +55,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import androidx.viewpager2.widget.ViewPager2
 import com.skydoves.flexible.core.FlexibleSheetState
 import com.skydoves.flexible.core.rememberFlexibleBottomSheetState
-import app.watchMe.R
-import app.watchMe.navigation.NavigationRoutes
+import app.watchMe.ui.navigation.NavigationRoutes
 import app.watchMe.ui.theme.WatchMeTheme
-import app.watchMe.utils.Cart
-import app.watchMe.utils.Repository
-import app.watchMe.utils.Watch
-import app.watchMe.utils.watchList
+import app.watchMe.model.Watch
+import app.watchMe.model.repositories.CartRepository
+import app.watchMe.model.repositories.FavoriteRepository
+import app.watchMe.model.watchList
 import com.skydoves.flexible.bottomsheet.material3.FlexibleBottomSheet
 import com.skydoves.flexible.core.FlexibleSheetSize
 import com.skydoves.flexible.core.FlexibleSheetValue
@@ -82,7 +73,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun DetailWatchScreen(index: Int, repository: Repository, navigator: NavHostController, cart: Cart) {
+fun DetailWatchScreen(index: Int, favoriteRepository: FavoriteRepository, navigator: NavHostController, cartRepository: CartRepository) {
     val watch = watchList[index]
 
     val sheetState = rememberFlexibleBottomSheetState(
@@ -96,9 +87,9 @@ fun DetailWatchScreen(index: Int, repository: Repository, navigator: NavHostCont
     )
     val scope = rememberCoroutineScope()
 
-    if(repository.hideBottomSheet){
+    if(favoriteRepository.hideBottomSheet){
         scope.launch { sheetState.show(target = FlexibleSheetValue.SlightlyExpanded) }
-        repository.hideBottomSheet = false
+        favoriteRepository.hideBottomSheet = false
     }
 
 
@@ -107,16 +98,16 @@ fun DetailWatchScreen(index: Int, repository: Repository, navigator: NavHostCont
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        DefaultTopBar(isMainScreen = false, navigator = navigator, cart = cart, repository = repository)
+        DefaultTopBar(isMainScreen = false, navigator = navigator, cartRepository = cartRepository, favoriteRepository = favoriteRepository)
         HorizontalPager(
             state = rememberPagerState { watch.imageCount }
         ) { imageNumber ->
-            repository.currentPagerIndex = imageNumber
+            favoriteRepository.currentPagerIndex = imageNumber
             Box(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Image(
-                    painter = painterResource(watch.imageList[repository.currentPagerIndex]),
+                    painter = painterResource(watch.imageList[favoriteRepository.currentPagerIndex]),
                     contentDescription = null,
                     contentScale = ContentScale.FillBounds,
                     modifier = Modifier
@@ -130,23 +121,23 @@ fun DetailWatchScreen(index: Int, repository: Repository, navigator: NavHostCont
         }
         ImageDotsIndicator(
             pageCount = watch.imageCount,
-            repository = repository,
+            favoriteRepository = favoriteRepository,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
-        BottomSheet(sheetState = sheetState, watch = watch, repository = repository, navigator = navigator, cart = cart)
+        BottomSheet(sheetState = sheetState, watch = watch, favoriteRepository = favoriteRepository, navigator = navigator, cartRepository = cartRepository)
     }
 }
 
 @Composable
-fun ImageDotsIndicator(pageCount: Int, repository: Repository, modifier: Modifier = Modifier) {
+fun ImageDotsIndicator(pageCount: Int, favoriteRepository: FavoriteRepository, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.Center
     ) {
         repeat(pageCount){index ->
-            val color = if(index == repository.currentPagerIndex) Color.Black else Color.Gray
-            val isCurrent = index == repository.currentPagerIndex
+            val color = if(index == favoriteRepository.currentPagerIndex) Color.Black else Color.Gray
+            val isCurrent = index == favoriteRepository.currentPagerIndex
             Icon(
                 imageVector = if(isCurrent) Icons.Default.Circle else Icons.Outlined.Circle,
                 contentDescription = null,
@@ -160,20 +151,20 @@ fun ImageDotsIndicator(pageCount: Int, repository: Repository, modifier: Modifie
 }
 
 @Composable
-fun BottomSheet(sheetState: FlexibleSheetState, repository: Repository, watch: Watch, navigator: NavHostController, cart: Cart) {
+fun BottomSheet(sheetState: FlexibleSheetState, favoriteRepository: FavoriteRepository, watch: Watch, navigator: NavHostController, cartRepository: CartRepository) {
     var isFullyExp by remember {
         mutableStateOf(false)
     }
     
     FlexibleBottomSheet(
-        onDismissRequest = { repository.hideBottomSheet = true },
+        onDismissRequest = { favoriteRepository.hideBottomSheet = true },
         containerColor = MaterialTheme.colorScheme.onSurface,
         shape = MaterialTheme.shapes.large,
         sheetState = sheetState,
         onTargetChanges = {
             if(it == FlexibleSheetValue.Hidden){
                 isFullyExp = false
-                repository.hideBottomSheet = true
+                favoriteRepository.hideBottomSheet = true
             } else if (it == FlexibleSheetValue.FullyExpanded){
                 isFullyExp = true
             } else {
@@ -182,16 +173,16 @@ fun BottomSheet(sheetState: FlexibleSheetState, repository: Repository, watch: W
         }
     ) {
         if(isFullyExp){
-            FullyExpandedContent(watch = watch, repository = repository, navigator = navigator, cart = cart)
+            FullyExpandedContent(watch = watch, favoriteRepository = favoriteRepository, navigator = navigator, cartRepository = cartRepository)
         } else {
-            SlightExpandedContent(repository = repository, watch = watch, cart = cart)
+            SlightExpandedContent(favoriteRepository = favoriteRepository, watch = watch, cartRepository = cartRepository)
         }
     }
 }
 
 @Composable
-fun FullyExpandedContent(watch: Watch, repository: Repository, navigator: NavHostController, cart: Cart) {
-    SlightExpandedContent(repository = repository, watch = watch, cart = cart)
+fun FullyExpandedContent(watch: Watch, favoriteRepository: FavoriteRepository, navigator: NavHostController, cartRepository: CartRepository) {
+    SlightExpandedContent(favoriteRepository = favoriteRepository, watch = watch, cartRepository = cartRepository)
     Column(
         modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
@@ -218,7 +209,7 @@ fun FullyExpandedContent(watch: Watch, repository: Repository, navigator: NavHos
         Text(text = "Similar watches", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
         LazyRow(){
-            items(watchList){item ->
+            items(watchList){ item ->
                 FullyExpandedWatchLazyRow(watch = item, navigator = navigator)
             }
         }
@@ -255,9 +246,9 @@ fun FullyExpandedWatchLazyRow(watch: Watch, navigator: NavHostController) {
 }
 
 @Composable
-fun SlightExpandedContent(watch: Watch, repository: Repository, cart: Cart) {
+fun SlightExpandedContent(watch: Watch, favoriteRepository: FavoriteRepository, cartRepository: CartRepository) {
     val testSizeList = listOf("28 mm", "32 mm", "36 mm", "40 mm")
-    var setFavorite by remember{mutableStateOf(repository.checkWatchInFavoriteList(watch))}
+    var setFavorite by remember{mutableStateOf(favoriteRepository.checkWatchInFavoriteList(watch))}
 
     Column(
         modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
@@ -287,7 +278,7 @@ fun SlightExpandedContent(watch: Watch, repository: Repository, cart: Cart) {
             modifier = Modifier.fillMaxWidth(),
         ) {
             items(testSizeList.size){item ->
-                SizeSelector(size = testSizeList[item], repository = repository)
+                SizeSelector(size = testSizeList[item], favoriteRepository = favoriteRepository)
                 Spacer(modifier = Modifier.width(16.dp))
                 //вставить элемент, который можно выбирать, но только 1 из всех, нельхя выбрать 2
             }
@@ -295,7 +286,7 @@ fun SlightExpandedContent(watch: Watch, repository: Repository, cart: Cart) {
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                      cart.addWatch(watch)
+                cartRepository.addWatch(watch)
                  },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
@@ -313,7 +304,7 @@ fun SlightExpandedContent(watch: Watch, repository: Repository, cart: Cart) {
             Row(
                 modifier = Modifier.clickable {
                     setFavorite = !setFavorite
-                    if(setFavorite) repository.addFavorite(watch) else repository.removeWatch(watch)
+                    if(setFavorite) favoriteRepository.addFavorite(watch) else favoriteRepository.removeWatch(watch)
                 }
             ) {
                 Icon(
@@ -334,13 +325,13 @@ fun SlightExpandedContent(watch: Watch, repository: Repository, cart: Cart) {
 }
 
 @Composable
-fun SizeSelector(size: String, repository: Repository) {
-    var isElementChosen = repository.selectedSize == size
+fun SizeSelector(size: String, favoriteRepository: FavoriteRepository) {
+    var isElementChosen = favoriteRepository.selectedSize == size
     Box(
         modifier = Modifier
             .size(50.dp)
             .clickable {
-                repository.selectedSize = size
+                favoriteRepository.selectedSize = size
                 isElementChosen = !isElementChosen
             }
             .clip(MaterialTheme.shapes.medium)
@@ -361,7 +352,7 @@ fun SizeSelector(size: String, repository: Repository) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DefaultTopBar(isMainScreen: Boolean, navigator: NavHostController, repository: Repository, cart: Cart) {
+fun DefaultTopBar(isMainScreen: Boolean, navigator: NavHostController, favoriteRepository: FavoriteRepository, cartRepository: CartRepository) {
     TopAppBar(
         title = {},
         colors = TopAppBarDefaults.topAppBarColors(
@@ -376,11 +367,11 @@ fun DefaultTopBar(isMainScreen: Boolean, navigator: NavHostController, repositor
             ) {
                 BadgedBox(
                     badge = { Badge(
-                        containerColor = if(repository.getFavoriteList().isNotEmpty()) Color.Red else Color.Transparent,
+                        containerColor = if(favoriteRepository.getFavoriteList().isNotEmpty()) Color.Red else Color.Transparent,
                         contentColor = Color.Black
                     ) {
-                        if(repository.getFavoriteList().isNotEmpty()) {
-                            Text(text = repository.getFavoriteList().size.toString())
+                        if(favoriteRepository.getFavoriteList().isNotEmpty()) {
+                            Text(text = favoriteRepository.getFavoriteList().size.toString())
                         }
                     }
                     }
@@ -395,11 +386,11 @@ fun DefaultTopBar(isMainScreen: Boolean, navigator: NavHostController, repositor
                 Spacer(modifier = Modifier.width(12.dp))
                 BadgedBox(
                     badge = { Badge(
-                        containerColor = if(cart.getCartList().isNotEmpty()) Color.Red else Color.Transparent,
+                        containerColor = if(cartRepository.getCartList().isNotEmpty()) Color.Red else Color.Transparent,
                         contentColor = Color.Black
                     ) {
-                        if(cart.getCartList().isNotEmpty()) {
-                            Text(text = cart.getCartList().size.toString())
+                        if(cartRepository.getCartList().isNotEmpty()) {
+                            Text(text = cartRepository.getCartList().size.toString())
                         }
                     }}
                 ) {
@@ -432,12 +423,4 @@ fun DefaultTopBar(isMainScreen: Boolean, navigator: NavHostController, repositor
             }
         }
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DetailPreview() {
-    WatchMeTheme {
-        DetailWatchScreen(index = 0, repository = Repository(), navigator = rememberNavController(), cart = Cart())
-    }
 }

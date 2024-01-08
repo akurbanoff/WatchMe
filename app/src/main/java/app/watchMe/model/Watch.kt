@@ -1,4 +1,4 @@
-package app.watchMe.utils
+package app.watchMe.model
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf

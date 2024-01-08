@@ -1,4 +1,4 @@
-package app.watchMe
+package app.watchMe.utils
 
 import android.content.Intent
 import android.os.Bundle
@@ -11,6 +11,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import app.watchMe.MainActivity
+import app.watchMe.R
 import app.watchMe.ui.theme.WatchMeTheme
 
 class SplashScreen : ComponentActivity() {

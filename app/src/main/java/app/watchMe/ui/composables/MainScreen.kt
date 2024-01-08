@@ -1,7 +1,5 @@
 package app.watchMe.ui.composables
 
-import android.util.Log
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,7 +26,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,35 +37,32 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import app.watchMe.navigation.NavigationRoutes
-import app.watchMe.R
-import app.watchMe.utils.Cart
-import app.watchMe.utils.Repository
-import app.watchMe.utils.Watch
-import app.watchMe.utils.watchList
-import java.util.Random
+import app.watchMe.ui.navigation.NavigationRoutes
+import app.watchMe.model.repositories.CartRepository
+import app.watchMe.model.Watch
+import app.watchMe.model.repositories.FavoriteRepository
+import app.watchMe.model.watchList
 
 @Composable
-fun MainScreen(navigator: NavHostController, repository: Repository, cart: Cart) {
+fun MainScreen(navigator: NavHostController, favoriteRepository: FavoriteRepository, cartRepository: CartRepository) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
-        DefaultTopBar(isMainScreen = true, navigator = navigator, repository = repository, cart = cart)
-        FeaturedWatchPart(navigator = navigator, repository = repository)
+        DefaultTopBar(isMainScreen = true, navigator = navigator, favoriteRepository = favoriteRepository, cartRepository = cartRepository)
+        FeaturedWatchPart(navigator = navigator, favoriteRepository = favoriteRepository)
         Spacer(modifier = Modifier.height(22.dp))
-        ProductsWatchPart(navigator = navigator, repository)
+        ProductsWatchPart(navigator = navigator, favoriteRepository = favoriteRepository)
     }
 }
 
 //@Preview(showBackground = true)
 @Composable
-fun FeaturedWatchPart(navigator: NavHostController, repository: Repository) {
+fun FeaturedWatchPart(navigator: NavHostController, favoriteRepository: FavoriteRepository) {
     val featuredWatch = watchList.random()
 
     Column {
@@ -129,7 +123,7 @@ fun FeaturedWatchPart(navigator: NavHostController, repository: Repository) {
 
 //@Preview(showBackground = true)
 @Composable
-fun ProductsWatchPart(navigator: NavHostController, repository: Repository) {
+fun ProductsWatchPart(navigator: NavHostController, favoriteRepository: FavoriteRepository) {
     val randomWatchList = watchList.subList(fromIndex = 0, toIndex = 5)
 
     Column(
@@ -163,15 +157,15 @@ fun ProductsWatchPart(navigator: NavHostController, repository: Repository) {
         Spacer(modifier = Modifier.height(12.dp))
         LazyRow(){
             items(randomWatchList){item ->
-                WatchElement(navigator = navigator, watch = item, repository = repository)
+                WatchElement(navigator = navigator, watch = item, favoriteRepository = favoriteRepository)
             }
         }
     }
 }
 
 @Composable
-fun WatchElement(navigator: NavHostController, watch: Watch, repository: Repository) {
-    var setFavorite by remember{mutableStateOf(repository.checkWatchInFavoriteList(watch))}
+fun WatchElement(navigator: NavHostController, watch: Watch, favoriteRepository: FavoriteRepository) {
+    var setFavorite by remember{mutableStateOf(favoriteRepository.checkWatchInFavoriteList(watch))}
 
     Column(
         modifier = Modifier
@@ -195,7 +189,7 @@ fun WatchElement(navigator: NavHostController, watch: Watch, repository: Reposit
                     .size(30.dp)
                     .clickable {
                         setFavorite = !setFavorite
-                        if(setFavorite) repository.addFavorite(watch) else repository.removeWatch(watch)
+                        if(setFavorite) favoriteRepository.addFavorite(watch) else favoriteRepository.removeWatch(watch)
                                },
                 tint = if(setFavorite) Color.Red else Color.White
             )

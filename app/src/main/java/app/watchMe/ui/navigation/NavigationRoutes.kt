@@ -1,4 +1,4 @@
-package app.watchMe.navigation
+package app.watchMe.ui.navigation
 
 sealed class NavigationRoutes(val route: String){
     object MainScreen: NavigationRoutes("main")

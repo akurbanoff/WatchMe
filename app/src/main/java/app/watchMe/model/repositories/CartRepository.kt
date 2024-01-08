@@ -1,12 +1,12 @@
-package app.watchMe.utils
+package app.watchMe.model.repositories
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
-import app.watchMe.utils.Watch
+import app.watchMe.model.Watch
 
-class Cart {
+class CartRepository {
     private var cart by mutableStateOf(emptyList<Watch>())
 
     fun addWatch(watch: Watch){

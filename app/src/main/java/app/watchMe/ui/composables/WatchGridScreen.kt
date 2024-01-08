@@ -2,9 +2,7 @@ package app.watchMe.ui.composables
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,21 +26,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import app.watchMe.navigation.NavigationRoutes
-import app.watchMe.utils.Cart
-import app.watchMe.utils.Repository
-import app.watchMe.utils.Watch
-import app.watchMe.utils.watchList
+import app.watchMe.ui.navigation.NavigationRoutes
+import app.watchMe.model.Watch
+import app.watchMe.model.repositories.CartRepository
+import app.watchMe.model.repositories.FavoriteRepository
+import app.watchMe.model.watchList
 
 @Composable
-fun WatchGreenScreen(navigator: NavHostController, cart: Cart, repository: Repository) {
+fun WatchGreenScreen(navigator: NavHostController, cartRepository: CartRepository, favoriteRepository: FavoriteRepository) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
-        DefaultTopBar(isMainScreen = false, navigator = navigator, cart = cart, repository = repository)
+        DefaultTopBar(isMainScreen = false, navigator = navigator, cartRepository = cartRepository, favoriteRepository = favoriteRepository)
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Watch List",
@@ -61,7 +59,7 @@ fun GridList(navigator: NavHostController) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2)
     ){
-        items(watchList){watch ->
+        items(watchList){ watch ->
             GridItem(navigator = navigator, watch = watch)
         }
     }

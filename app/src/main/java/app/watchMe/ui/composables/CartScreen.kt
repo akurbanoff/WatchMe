@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,12 +17,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Badge
@@ -44,27 +41,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import app.watchMe.navigation.NavigationRoutes
-import app.watchMe.utils.Cart
-import app.watchMe.utils.Repository
-import app.watchMe.utils.Watch
+import app.watchMe.ui.navigation.NavigationRoutes
+import app.watchMe.model.Watch
+import app.watchMe.model.repositories.CartRepository
+import app.watchMe.model.repositories.FavoriteRepository
 
 @Composable
-fun CartScreen(navigator: NavHostController, cart: Cart, repository: Repository) {
+fun CartScreen(navigator: NavHostController, cartRepository: CartRepository, favoriteRepository: FavoriteRepository) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
-        CartTopBar(navigator = navigator, repository = repository, cart = cart)
-        CartList(navigator = navigator, cart = cart)
+        CartTopBar(navigator = navigator, favoriteRepository = favoriteRepository, cartRepository = cartRepository)
+        CartList(navigator = navigator, cartRepository = cartRepository)
         Button(
             onClick = {},
             colors = ButtonDefaults.buttonColors(
@@ -79,10 +75,10 @@ fun CartScreen(navigator: NavHostController, cart: Cart, repository: Repository)
 }
 
 @Composable
-fun CartList(navigator: NavHostController, cart: Cart) {
+fun CartList(navigator: NavHostController, cartRepository: CartRepository) {
     LazyColumn(){
-        items(cart.getCartList()){watch ->
-            CartElement(navigator = navigator, cart = cart, watch = watch)
+        items(cartRepository.getCartList()){watch ->
+            CartElement(navigator = navigator, cartRepository = cartRepository, watch = watch)
             Spacer(modifier = Modifier.height(16.dp))
         }
         item {
@@ -108,7 +104,7 @@ fun CartList(navigator: NavHostController, cart: Cart) {
                         color = Color.White
                     )
                     Text(
-                        text = cart.getTotalPrice().toString() + " руб.",
+                        text = cartRepository.getTotalPrice().toString() + " руб.",
                         color = Color.White
                     )
                 }
@@ -140,7 +136,7 @@ fun CartList(navigator: NavHostController, cart: Cart) {
                         style = MaterialTheme.typography.headlineSmall
                     )
                     Text(
-                        text = cart.getTotalPrice().minus(2000).toString() + " руб.",
+                        text = cartRepository.getTotalPrice().minus(2000).toString() + " руб.",
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier
@@ -155,7 +151,7 @@ fun CartList(navigator: NavHostController, cart: Cart) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartElement(navigator: NavHostController, cart: Cart, watch: Watch) {
+fun CartElement(navigator: NavHostController, cartRepository: CartRepository, watch: Watch) {
     ElevatedCard(
         onClick = { navigator.navigate(NavigationRoutes.DetailWatchScreen.withArgs(watch.id)) },
         modifier = Modifier
@@ -189,7 +185,7 @@ fun CartElement(navigator: NavHostController, cart: Cart, watch: Watch) {
                         .background(Color.White, shape = CircleShape)
                         .size(30.dp)
                         .align(Alignment.End)
-                        .clickable { cart.removeWatch(watch) }
+                        .clickable { cartRepository.removeWatch(watch) }
                 )
                 Text(
                     text = watch.name,
@@ -202,7 +198,7 @@ fun CartElement(navigator: NavHostController, cart: Cart, watch: Watch) {
                     style = MaterialTheme.typography.headlineSmall
                 )
                 Text(
-                    text = cart.getWatchPrice(watch).toString() + " руб.",
+                    text = cartRepository.getWatchPrice(watch).toString() + " руб.",
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -221,11 +217,11 @@ fun CartElement(navigator: NavHostController, cart: Cart, watch: Watch) {
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier
-                                .clickable { cart.changeAmount(watch, increase = false) }
+                                .clickable { cartRepository.changeAmount(watch, increase = false) }
                                 .size(40.dp)
                         )
                         Text(
-                            text = cart.getAmount(watch),
+                            text = cartRepository.getAmount(watch),
                             style = MaterialTheme.typography.titleLarge,
                             color = Color.White
                         )
@@ -234,7 +230,7 @@ fun CartElement(navigator: NavHostController, cart: Cart, watch: Watch) {
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier
-                                .clickable { cart.changeAmount(watch, increase = true) }
+                                .clickable { cartRepository.changeAmount(watch, increase = true) }
                                 .size(40.dp)
                         )
                     }
@@ -246,7 +242,7 @@ fun CartElement(navigator: NavHostController, cart: Cart, watch: Watch) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartTopBar(navigator: NavHostController, cart: Cart, repository: Repository) {
+fun CartTopBar(navigator: NavHostController, cartRepository: CartRepository, favoriteRepository: FavoriteRepository) {
     TopAppBar(
         title = { },
         navigationIcon = {
@@ -265,11 +261,11 @@ fun CartTopBar(navigator: NavHostController, cart: Cart, repository: Repository)
             ) {
                 BadgedBox(
                     badge = { Badge(
-                        containerColor = if(repository.getFavoriteList().isNotEmpty()) Color.Red else Color.Transparent,
+                        containerColor = if(favoriteRepository.getFavoriteList().isNotEmpty()) Color.Red else Color.Transparent,
                         contentColor = Color.Black
                     ) {
-                        if(repository.getFavoriteList().isNotEmpty()) {
-                            Text(text = repository.getFavoriteList().size.toString())
+                        if(favoriteRepository.getFavoriteList().isNotEmpty()) {
+                            Text(text = favoriteRepository.getFavoriteList().size.toString())
                         } }
                     }
                 ) {
@@ -281,11 +277,11 @@ fun CartTopBar(navigator: NavHostController, cart: Cart, repository: Repository)
                 Spacer(modifier = Modifier.width(12.dp))
                 BadgedBox(
                     badge = { Badge(
-                        containerColor = if(cart.getCartList().isNotEmpty()) Color.Red else Color.Transparent,
+                        containerColor = if(cartRepository.getCartList().isNotEmpty()) Color.Red else Color.Transparent,
                         contentColor = Color.Black
                     ) {
-                        if(cart.getCartList().isNotEmpty()) {
-                            Text(text = cart.getCartList().size.toString())
+                        if(cartRepository.getCartList().isNotEmpty()) {
+                            Text(text = cartRepository.getCartList().size.toString())
                         }
                     }}
                 ) {

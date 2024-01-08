@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -42,44 +41,43 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import app.watchMe.navigation.NavigationRoutes
-import app.watchMe.utils.Cart
-import app.watchMe.utils.Repository
-import app.watchMe.utils.Watch
+import app.watchMe.ui.navigation.NavigationRoutes
+import app.watchMe.model.Watch
+import app.watchMe.model.repositories.CartRepository
+import app.watchMe.model.repositories.FavoriteRepository
 
 @Composable
-fun FavoriteScreen(navigator: NavHostController, repository: Repository, cart: Cart) {
+fun FavoriteScreen(navigator: NavHostController, favoriteRepository: FavoriteRepository, cartRepository: CartRepository) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
-        FavoriteTopBar(navigator = navigator, repository = repository, cart = cart)
+        FavoriteTopBar(navigator = navigator, favoriteRepository = favoriteRepository, cartRepository = cartRepository)
         FavoriteSearchBar()
         Spacer(modifier = Modifier.height(16.dp))
-        FavoriteList(navigator = navigator, repository = repository, cart = cart)
+        FavoriteList(navigator = navigator, favoriteRepository = favoriteRepository, cartRepository = cartRepository)
     }
 }
 
 @Composable
-fun FavoriteList(navigator: NavHostController, repository: Repository, cart: Cart) {
+fun FavoriteList(navigator: NavHostController, favoriteRepository: FavoriteRepository, cartRepository: CartRepository) {
     LazyColumn(){
-        items(repository.getFavoriteList()){watch ->
-            FavoriteElement(navigator = navigator, watch = watch, repository = repository, cart = cart)
+        items(favoriteRepository.getFavoriteList()){watch ->
+            FavoriteElement(navigator = navigator, watch = watch, favoriteRepository = favoriteRepository, cartRepository = cartRepository)
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-fun FavoriteElement(navigator: NavHostController, watch: Watch, repository: Repository, cart: Cart) {
+fun FavoriteElement(navigator: NavHostController, watch: Watch, favoriteRepository: FavoriteRepository, cartRepository: CartRepository) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -128,14 +126,14 @@ fun FavoriteElement(navigator: NavHostController, watch: Watch, repository: Repo
                     tint = Color.Red,
                     modifier = Modifier
                         .size(40.dp)
-                        .clickable { repository.removeWatch(watch) }
+                        .clickable { favoriteRepository.removeWatch(watch) }
                         .background(Color.White, CircleShape)
                 )
                 Icon(imageVector = Icons.Default.ShoppingCart, contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .size(40.dp)
-                        .clickable { cart.addWatch(watch) }
+                        .clickable { cartRepository.addWatch(watch) }
                         .background(Color.White, CircleShape)
                 )
             }
@@ -165,7 +163,7 @@ fun FavoriteSearchBar() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavoriteTopBar(navigator: NavHostController, repository: Repository, cart: Cart) {
+fun FavoriteTopBar(navigator: NavHostController, favoriteRepository: FavoriteRepository, cartRepository: CartRepository) {
     TopAppBar(
         title = { },
         navigationIcon = {
@@ -186,11 +184,11 @@ fun FavoriteTopBar(navigator: NavHostController, repository: Repository, cart: C
             ) {
                 BadgedBox(
                     badge = { Badge(
-                        containerColor = if(repository.getFavoriteList().isNotEmpty()) Color.Red else Color.Transparent,
+                        containerColor = if(favoriteRepository.getFavoriteList().isNotEmpty()) Color.Red else Color.Transparent,
                         contentColor = Color.Black
                     ) {
-                        if(repository.getFavoriteList().isNotEmpty()) {
-                            Text(text = repository.getFavoriteList().size.toString())
+                        if(favoriteRepository.getFavoriteList().isNotEmpty()) {
+                            Text(text = favoriteRepository.getFavoriteList().size.toString())
                         }
                     }}
                 ) {
@@ -199,11 +197,11 @@ fun FavoriteTopBar(navigator: NavHostController, repository: Repository, cart: C
                 Spacer(modifier = Modifier.width(12.dp))
                 BadgedBox(
                     badge = { Badge(
-                        containerColor = if(cart.getCartList().isNotEmpty()) Color.Red else Color.Transparent,
+                        containerColor = if(cartRepository.getCartList().isNotEmpty()) Color.Red else Color.Transparent,
                         contentColor = Color.Black
                     ) {
-                        if(cart.getCartList().isNotEmpty()) {
-                            Text(text = cart.getCartList().size.toString())
+                        if(cartRepository.getCartList().isNotEmpty()) {
+                            Text(text = cartRepository.getCartList().size.toString())
                         }
                     }}
                 ) {

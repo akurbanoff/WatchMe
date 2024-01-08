@@ -1,6 +1,7 @@
-package app.watchMe.utils
+package app.watchMe.model
 
 import app.watchMe.R
+import app.watchMe.model.Watch
 
 val watchList = listOf(
             Watch(
