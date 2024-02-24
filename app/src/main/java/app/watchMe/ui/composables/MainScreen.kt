@@ -37,8 +37,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import app.watchMe.ui.navigation.NavigationRoutes
 import app.watchMe.model.repositories.CartRepository
 import app.watchMe.model.Watch
@@ -46,7 +48,11 @@ import app.watchMe.model.repositories.FavoriteRepository
 import app.watchMe.model.watchList
 
 @Composable
-fun MainScreen(navigator: NavHostController, favoriteRepository: FavoriteRepository, cartRepository: CartRepository) {
+fun MainScreen(
+    navigator: NavHostController,
+    favoriteRepository: FavoriteRepository,
+    cartRepository: CartRepository
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -82,7 +88,9 @@ fun FeaturedWatchPart(navigator: NavHostController, favoriteRepository: Favorite
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp).width(150.dp)
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .width(150.dp)
                 ) {
                     Text(
                         text = featuredWatch.name,
@@ -177,7 +185,8 @@ fun WatchElement(navigator: NavHostController, watch: Watch, favoriteRepository:
             }
     ) {
         Box(modifier = Modifier
-            .height(230.dp).width(155.dp)
+            .height(230.dp)
+            .width(155.dp)
             .clip(MaterialTheme.shapes.large)
             .background(Color.LightGray)
             .padding(8.dp)
@@ -189,8 +198,10 @@ fun WatchElement(navigator: NavHostController, watch: Watch, favoriteRepository:
                     .size(30.dp)
                     .clickable {
                         setFavorite = !setFavorite
-                        if(setFavorite) favoriteRepository.addFavorite(watch) else favoriteRepository.removeWatch(watch)
-                               },
+                        if (setFavorite) favoriteRepository.addFavorite(watch) else favoriteRepository.removeWatch(
+                            watch
+                        )
+                    },
                 tint = if(setFavorite) Color.Red else Color.White
             )
             Image(
@@ -207,13 +218,17 @@ fun WatchElement(navigator: NavHostController, watch: Watch, favoriteRepository:
             text = watch.company,
             color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally)
         )
         Text(
             text = watch.name,
             color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally)
         )
     }
 }

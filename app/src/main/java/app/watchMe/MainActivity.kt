@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     //watchViewModel.addWatch()
-                    Navigation()
+                    Navigation(this)
                 }
             }
         }

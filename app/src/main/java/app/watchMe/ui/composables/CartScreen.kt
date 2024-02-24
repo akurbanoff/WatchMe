@@ -4,6 +4,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -31,54 +34,79 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import app.watchMe.ui.navigation.NavigationRoutes
 import app.watchMe.model.Watch
 import app.watchMe.model.repositories.CartRepository
 import app.watchMe.model.repositories.FavoriteRepository
 
 @Composable
-fun CartScreen(navigator: NavHostController, cartRepository: CartRepository, favoriteRepository: FavoriteRepository) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
+fun CartScreen(
+    navigator: NavHostController,
+    cartRepository: CartRepository,
+    favoriteRepository: FavoriteRepository
+) {
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        CartTopBar(navigator = navigator, favoriteRepository = favoriteRepository, cartRepository = cartRepository)
-        CartList(navigator = navigator, cartRepository = cartRepository)
-        Button(
-            onClick = {},
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.LightGray,
-                contentColor = Color.Black
-            ),
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Text(text = "BUY", textAlign = TextAlign.Center)
+        BoxWithConstraints {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(16.dp)
+            ) {
+                CartTopBar(navigator = navigator, favoriteRepository = favoriteRepository, cartRepository = cartRepository)
+                CartList(navigator = navigator, cartRepository = cartRepository, favoriteRepository = favoriteRepository)
+            }
+
+            FloatingActionButton(
+                onClick = { /*TODO*/ },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .size(80.dp),
+                shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = null,
+                    modifier = Modifier.size(60.dp)
+                )
+            }
         }
     }
 }
 
 @Composable
-fun CartList(navigator: NavHostController, cartRepository: CartRepository) {
+fun CartList(navigator: NavHostController, cartRepository: CartRepository, favoriteRepository: FavoriteRepository) {
     LazyColumn(){
         items(cartRepository.getCartList()){watch ->
-            CartElement(navigator = navigator, cartRepository = cartRepository, watch = watch)
+            CartElement(navigator = navigator, cartRepository = cartRepository, watch = watch, favoriteRepository = favoriteRepository)
             Spacer(modifier = Modifier.height(16.dp))
         }
         item {
@@ -139,19 +167,20 @@ fun CartList(navigator: NavHostController, cartRepository: CartRepository) {
                         text = cartRepository.getTotalPrice().minus(2000).toString() + " руб.",
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier
-                            .clip(MaterialTheme.shapes.small)
-                            .background(Color.White)
+                        modifier = Modifier.clip(MaterialTheme.shapes.small)
                     )
                 }
             }
         }
+        item { Spacer(modifier = Modifier.height(100.dp)) }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartElement(navigator: NavHostController, cartRepository: CartRepository, watch: Watch) {
+fun CartElement(navigator: NavHostController, cartRepository: CartRepository, watch: Watch, favoriteRepository: FavoriteRepository) {
+    var setFavorite by remember{ mutableStateOf(favoriteRepository.checkWatchInFavoriteList(watch)) }
+
     ElevatedCard(
         onClick = { navigator.navigate(NavigationRoutes.DetailWatchScreen.withArgs(watch.id)) },
         modifier = Modifier
@@ -175,66 +204,102 @@ fun CartElement(navigator: NavHostController, cartRepository: CartRepository, wa
                     .background(Color.White, MaterialTheme.shapes.medium)
             )
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 12.dp, top = 8.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = null,
-                    tint = Color.Black,
-                    modifier = Modifier
-                        .background(Color.White, shape = CircleShape)
-                        .size(30.dp)
-                        .align(Alignment.End)
-                        .clickable { cartRepository.removeWatch(watch) }
-                )
                 Text(
                     text = watch.name,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(top = 8.dp),
+                        .align(Alignment.CenterHorizontally),
                     style = MaterialTheme.typography.headlineSmall
                 )
+                Text(
+                    text = "Производитель - ${watch.company}",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .align(Alignment.Start),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Материал - ${watch.material}",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.align(Alignment.Start),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+//                Text(
+//                    text = "Описание - ${watch.featureDescription}",
+//                    textAlign = TextAlign.Center,
+//                    style = MaterialTheme.typography.titleSmall,
+//                    modifier = Modifier.align(Alignment.Start),
+//                    color = MaterialTheme.colorScheme.onSurface
+//                )
                 Text(
                     text = cartRepository.getWatchPrice(watch).toString() + " руб.",
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    modifier = Modifier.align(Alignment.Start),
                     textAlign = TextAlign.Center
                 )
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.Bottom,
+            }
+        }
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp)
+        ) {
+            Row {
+                Icon(
+                    imageVector = Icons.Default.RemoveCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = 16.dp)
-                ) {
-                    Row {
-                        Icon(
-                            imageVector = Icons.Default.RemoveCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .clickable { cartRepository.changeAmount(watch, increase = false) }
-                                .size(40.dp)
-                        )
-                        Text(
-                            text = cartRepository.getAmount(watch),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = Color.White
-                        )
-                        Icon(
-                            imageVector = Icons.Default.AddCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .clickable { cartRepository.changeAmount(watch, increase = true) }
-                                .size(40.dp)
-                        )
-                    }
-                }
+                        .clickable { cartRepository.changeAmount(watch, increase = false) }
+                        .size(34.dp)
+                )
+                Text(
+                    text = cartRepository.getAmount(watch),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.White
+                )
+                Icon(
+                    imageVector = Icons.Default.AddCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .clickable { cartRepository.changeAmount(watch, increase = true) }
+                        .size(34.dp)
+                )
+            }
+            Row{
+                Icon(
+                    imageVector = Icons.Default.Favorite, contentDescription = null,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable {
+                            setFavorite = !setFavorite
+                            if (setFavorite) favoriteRepository.addFavorite(watch) else favoriteRepository.removeWatch(
+                                watch
+                            )
+                        },
+                    tint = if(setFavorite) Color.Red else Color.White
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Icon(
+                    imageVector = Icons.Default.DeleteOutline,
+                    contentDescription = null,
+                    tint = Color.Red,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable { cartRepository.removeWatch(watch) }
+                )
             }
         }
     }

@@ -51,12 +51,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import app.watchMe.domain.sendWatchBroadcast
 import com.skydoves.flexible.core.FlexibleSheetState
 import com.skydoves.flexible.core.rememberFlexibleBottomSheetState
 import app.watchMe.ui.navigation.NavigationRoutes
@@ -186,24 +188,24 @@ fun FullyExpandedContent(watch: Watch, favoriteRepository: FavoriteRepository, n
     Column(
         modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
-        Text(text = "Additional Information")
+        Text(text = "Additional Information", color = MaterialTheme.colorScheme.secondary)
         Spacer(modifier = Modifier.height(8.dp))
         Row {
             Text(text = "Case thickness", color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = watch.caseThickness, style = MaterialTheme.typography.bodyMedium)
+            Text(text = watch.caseThickness, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
         }
         Spacer(modifier = Modifier.height(8.dp))
         Row {
             Text(text = "Material", color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = watch.material, style = MaterialTheme.typography.bodyMedium)
+            Text(text = watch.material, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
         }
         Spacer(modifier = Modifier.height(8.dp))
         Row {
             Text(text = "Strap", color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = watch.strap, style = MaterialTheme.typography.bodyMedium)
+            Text(text = watch.strap, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(text = "Similar watches", style = MaterialTheme.typography.titleMedium)
@@ -240,7 +242,7 @@ fun FullyExpandedWatchLazyRow(watch: Watch, navigator: NavHostController) {
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "${watch.price} руб.")
+        Text(text = "${watch.price} руб.", color = MaterialTheme.colorScheme.secondary)
         Text(text = watch.name, color = Color.Gray)
     }
 }
@@ -249,18 +251,21 @@ fun FullyExpandedWatchLazyRow(watch: Watch, navigator: NavHostController) {
 fun SlightExpandedContent(watch: Watch, favoriteRepository: FavoriteRepository, cartRepository: CartRepository) {
     val testSizeList = listOf("28 mm", "32 mm", "36 mm", "40 mm")
     var setFavorite by remember{mutableStateOf(favoriteRepository.checkWatchInFavoriteList(watch))}
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
         Text(
             text = "${watch.price} рублей",
-            style = MaterialTheme.typography.headlineSmall
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.secondary
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = watch.name,
-            style = MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.secondary
         )
         Spacer(modifier = Modifier.height(16.dp))
         Row(
@@ -271,7 +276,10 @@ fun SlightExpandedContent(watch: Watch, favoriteRepository: FavoriteRepository, 
                 text = "Choose your size",
                 color = Color.Gray
             )
-            Text(text = "Size guide")
+            Text(
+                text = "Size guide",
+                color = MaterialTheme.colorScheme.secondary
+            )
         }
         Spacer(modifier = Modifier.height(8.dp))
         LazyRow(
@@ -313,12 +321,14 @@ fun SlightExpandedContent(watch: Watch, favoriteRepository: FavoriteRepository, 
                     tint = if(setFavorite) Color.Red else Color.White
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Save", style = MaterialTheme.typography.titleMedium)
+                Text(text = "Save", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.secondary)
             }
-            Row {
+            Row(
+                modifier = Modifier.clickable { sendWatchBroadcast(context = context, watch = watch) }
+            ) {
                 Icon(imageVector = Icons.Default.IosShare, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Share", style = MaterialTheme.typography.titleMedium)
+                Text(text = "Share", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.secondary)
             }
         }
     }

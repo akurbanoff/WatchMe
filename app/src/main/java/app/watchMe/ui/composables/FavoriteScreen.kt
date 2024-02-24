@@ -127,14 +127,12 @@ fun FavoriteElement(navigator: NavHostController, watch: Watch, favoriteReposito
                     modifier = Modifier
                         .size(40.dp)
                         .clickable { favoriteRepository.removeWatch(watch) }
-                        .background(Color.White, CircleShape)
                 )
                 Icon(imageVector = Icons.Default.ShoppingCart, contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .size(40.dp)
                         .clickable { cartRepository.addWatch(watch) }
-                        .background(Color.White, CircleShape)
                 )
             }
         }

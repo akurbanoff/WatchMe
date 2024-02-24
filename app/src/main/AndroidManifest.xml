@@ -24,12 +24,19 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.WatchMe">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
     </application>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.SEND"/>
+            <data android:mimeType="text/plain" />
+        </intent>
+    </queries>
 
 </manifest>

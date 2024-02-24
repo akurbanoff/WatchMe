@@ -1,5 +1,6 @@
 package app.watchMe.ui.navigation
 
+import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,13 +19,13 @@ import app.watchMe.model.repositories.CartRepository
 import app.watchMe.model.repositories.FavoriteRepository
 
 @Composable
-fun Navigation() {
+fun Navigation(activity: Activity) {
     val navigator = rememberNavController()
     val cartRepository by remember {
-        mutableStateOf(CartRepository())
+        mutableStateOf(CartRepository(activity))
     }
     val favoriteRepository by remember {
-        mutableStateOf(FavoriteRepository())
+        mutableStateOf(FavoriteRepository(activity))
     }
 
     NavHost(navController = navigator, startDestination = NavigationRoutes.MainScreen.route){
